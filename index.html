@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalender Musiman</title>
+    <title>Sistem Kalender Ganda</title>
     <style>
         :root {
             --bg-color: #f8f9fa;
             --text-color: #333;
             --primary: #2c3e50;
+            --accent: #4caf50;
         }
 
         body {
@@ -20,38 +21,64 @@
             line-height: 1.6;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 2rem;
+        header { text-align: center; margin-bottom: 2rem; }
+        h1 { color: var(--primary); margin-bottom: 0.5rem; }
+
+        /* --- Panel Kontrol Atas --- */
+        .controls-wrapper {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        h1 {
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .controls {
+        .toggle-group {
             display: flex;
             justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 2rem;
-            background: white;
-            padding: 1rem;
+            background: #f1f3f5;
             border-radius: 8px;
-            border: 1px solid #eee;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
+            padding: 5px;
         }
 
-        .controls label {
+        .toggle-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
             font-weight: bold;
-            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 6px;
+            color: #6c757d;
+            transition: all 0.2s;
         }
 
-        .controls input[type="number"] {
-            padding: 8px 12px;
+        .toggle-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .action-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .year-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
+        .year-control input {
+            padding: 8px;
             font-size: 1.1rem;
             border: 2px solid #ddd;
             border-radius: 6px;
@@ -59,11 +86,22 @@
             text-align: center;
         }
 
-        .controls input[type="number"]:focus {
-            outline: none;
-            border-color: #4caf50;
+        .btn-settings {
+            background: #e9ecef;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.2s;
         }
+        
+        .btn-settings:hover { background: #dee2e6; }
 
+        /* --- Grid Kalender --- */
         .calendar-container {
             display: grid;
             grid-template-columns: 1fr;
@@ -73,85 +111,81 @@
         }
 
         @media (min-width: 768px) {
-            .calendar-container {
-                grid-template-columns: 1fr 1fr;
-            }
+            .calendar-container { grid-template-columns: 1fr 1fr; }
         }
 
-        .season-card {
+        @media (min-width: 1024px) {
+            /* Mode Masehi butuh lebih banyak kolom agar rapi */
+            .calendar-container.masehi-mode { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .calendar-card {
             border-radius: 12px;
             padding: 1.5rem;
             background: white;
             border: 1px solid #eaeaea;
+            border-top: 6px solid var(--primary);
         }
 
-        .season-header {
+        /* Warna khusus untuk mode musim */
+        .season-0 { border-top-color: #4caf50; } /* Semi */
+        .season-1 { border-top-color: #ffb300; } /* Panas */
+        .season-2 { border-top-color: #ff5722; } /* Gugur */
+        .season-3 { border-top-color: #03a9f4; } /* Dingin */
+
+        .card-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
             border-bottom: 2px solid rgba(0,0,0,0.05);
         }
 
-        .season-header h2 {
-            margin: 0;
-            font-size: 1.8rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .semi { border-top: 6px solid #4caf50; }
-        .panas { border-top: 6px solid #ffb300; }
-        .gugur { border-top: 6px solid #ff5722; }
-        .dingin { border-top: 6px solid #03a9f4; }
+        .card-header h2 { margin: 0; font-size: 1.4rem; }
 
         .days-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
-            gap: 6px;
+            grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+            gap: 5px;
         }
 
         .day {
             background-color: #f1f3f5;
-            border: 1px solid transparent;
             border-radius: 6px;
             text-align: center;
-            padding: 8px 2px;
+            padding: 6px 0;
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.15s ease, transform 0.15s ease;
+            transition: all 0.15s ease;
             position: relative;
-            user-select: none;
         }
 
         .day:hover {
             background-color: #e9ecef;
-            transform: scale(1.08);
-            border-color: #ccc;
+            transform: scale(1.1);
             z-index: 2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .day.has-note {
-            background-color: #e3f2fd; /* Warna khusus untuk hari bercatatan */
-            border-color: #bbdefb;
+            background-color: #e3f2fd;
             color: #0d47a1;
+            border: 1px solid #bbdefb;
         }
 
         .day.has-note::after {
             content: "📝";
             position: absolute;
-            top: -6px;
-            right: -6px;
-            font-size: 0.75rem;
+            top: -5px; right: -5px;
+            font-size: 0.7rem;
             background: white;
             border-radius: 50%;
             border: 1px solid #eee;
         }
 
-        /* --- STYLING MODAL --- */
+        /* --- Modals --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -160,13 +194,6 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-            opacity: 1;
         }
 
         .modal {
@@ -175,75 +202,65 @@
             border-radius: 12px;
             width: 90%;
             max-width: 500px;
-            transform: translateY(-20px);
-            transition: transform 0.2s ease;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
-        .modal-overlay.show .modal {
-            transform: translateY(0);
-        }
-
-        .modal h3 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .modal h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         
         textarea {
-            width: 100%;
-            height: 150px;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 1rem;
-            resize: vertical;
-            box-sizing: border-box;
-            margin-bottom: 1rem;
+            width: 100%; height: 150px;
+            padding: 12px; border: 1px solid #ccc;
+            border-radius: 8px; font-family: inherit;
+            margin-bottom: 1rem; resize: vertical; box-sizing: border-box;
         }
 
-        /* Tampilan Mode Baca (View-Only) */
         .note-display {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-            min-height: 100px;
-            margin-bottom: 1rem;
-            white-space: pre-wrap; /* Mempertahankan format enter/newline */
-            line-height: 1.5;
-            color: #495057;
+            background: #f8f9fa; padding: 15px; border-radius: 8px;
+            border: 1px solid #e9ecef; min-height: 100px;
+            margin-bottom: 1rem; white-space: pre-wrap;
         }
 
-        .modal-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; }
+        
         button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: opacity 0.15s ease;
+            padding: 8px 16px; border: none; border-radius: 6px;
+            font-weight: bold; cursor: pointer;
         }
-
-        .btn-save { background-color: #4caf50; color: white; }
+        .btn-save { background-color: var(--accent); color: white; }
         .btn-delete { background-color: #f44336; color: white; }
         .btn-close { background-color: #e0e0e0; color: #333; }
-        
-        button:hover { opacity: 0.85; }
+
+        /* Settings Form */
+        .settings-group { margin-bottom: 1.5rem; }
+        .settings-group label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #555; }
+        .settings-group input { 
+            width: 100%; padding: 8px; border: 1px solid #ccc; 
+            border-radius: 4px; box-sizing: border-box; margin-bottom: 8px;
+        }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Kalender Musiman</h1>
+        <h1 id="mainTitle">Sistem Kalender</h1>
     </header>
 
-    <div class="controls">
-        <label for="yearInput">Tahun:</label>
-        <input type="number" id="yearInput" min="1" max="2687" value="1">
+    <div class="controls-wrapper">
+        <div class="toggle-group" id="calendarToggle">
+            <!-- Tombol Toggle akan diisi via JS -->
+        </div>
+
+        <div class="action-group">
+            <div class="year-control">
+                <label for="yearInput">Tahun:</label>
+                <input type="number" id="yearInput" min="1" max="2687" value="1">
+            </div>
+            <button class="btn-settings" id="btnOpenSettings">⚙️ Pengaturan</button>
+        </div>
     </div>
 
     <div class="calendar-container" id="calendar"></div>
@@ -253,188 +270,276 @@
         <div class="modal">
             <h3 id="modalTitle">Detail Kejadian</h3>
             
-            <!-- Mode Baca (View) -->
             <div id="viewMode" style="display: none;">
                 <div id="noteDisplay" class="note-display"></div>
                 <div class="modal-buttons">
-                    <button class="btn-delete" id="btnDelete">Hapus Catatan</button>
+                    <button class="btn-delete" id="btnDelete">Hapus</button>
                     <button class="btn-close" id="btnCloseView">Tutup</button>
                 </div>
             </div>
 
-            <!-- Mode Tulis (Edit) -->
             <div id="editMode" style="display: none;">
-                <textarea id="noteContent" placeholder="Tulis kejadian atau catatan di hari ini..."></textarea>
+                <textarea id="noteContent" placeholder="Tulis kejadian..."></textarea>
                 <div class="modal-buttons">
                     <button class="btn-close" id="btnCloseEdit">Batal</button>
-                    <button class="btn-save" id="btnSave">Simpan</button>
+                    <button class="btn-save" id="btnSaveNote">Simpan</button>
                 </div>
             </div>
+        </div>
+    </div>
 
+    <!-- Modal Pengaturan -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <h3>Pengaturan Nama</h3>
+            <div id="settingsForm"></div>
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button class="btn-close" id="btnCloseSettings">Batal</button>
+                <button class="btn-save" id="btnSaveSettings">Simpan Perubahan</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const seasons = [
-            { id: 'semi', name: 'Musim Semi', icon: '🌸', days: 90 },
-            { id: 'panas', name: 'Musim Panas', icon: '☀️', days: 90 },
-            { id: 'gugur', name: 'Musim Gugur', icon: '🍂', days: 90 },
-            { id: 'dingin', name: 'Musim Dingin', icon: '❄️', days: 90 }
-        ];
+        // --- 1. STATE & KONFIGURASI DEFAULT ---
+        const defaultNames = {
+            calSeasonName: "Kalender Musim",
+            calMasehiName: "Kalender Masehi",
+            seasons: ["Musim Semi", "Musim Panas", "Musim Gugur", "Musim Dingin"],
+            months: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+        };
 
+        let currentNames = JSON.parse(localStorage.getItem('kalender_names')) || defaultNames;
+        let currentYear = 1;
+        let activeMode = 'season'; // 'season' atau 'masehi'
+        let activeDoy = 0; // Universal Day of Year (1-366)
+
+        // --- ELEMEN DOM ---
         const calendarContainer = document.getElementById('calendar');
+        const mainTitle = document.getElementById('mainTitle');
+        const toggleGroup = document.getElementById('calendarToggle');
         const yearInput = document.getElementById('yearInput');
-        const modalOverlay = document.getElementById('noteModal');
-        const modalTitle = document.getElementById('modalTitle');
+        
+        // Modal Catatan
+        const noteModal = document.getElementById('noteModal');
+        const noteTitle = document.getElementById('modalTitle');
         const noteContent = document.getElementById('noteContent');
         const noteDisplay = document.getElementById('noteDisplay');
         const viewMode = document.getElementById('viewMode');
         const editMode = document.getElementById('editMode');
+
+        // Modal Pengaturan
+        const settingsModal = document.getElementById('settingsModal');
+        const settingsForm = document.getElementById('settingsForm');
+
+        // --- 2. LOGIKA PENANGGALAN (SINKRONISASI) ---
         
-        let currentYear = 1;
-        let activeSeasonId = '';
-        let activeDay = 0;
-
-        function buildCalendarUI() {
-            calendarContainer.innerHTML = ''; 
-
-            seasons.forEach(season => {
-                const seasonCard = document.createElement('div');
-                seasonCard.className = `season-card ${season.id}`;
-
-                const header = document.createElement('div');
-                header.className = 'season-header';
-                header.innerHTML = `
-                    <h2><span>${season.icon}</span> ${season.name}</h2>
-                `;
-                seasonCard.appendChild(header);
-
-                const daysGrid = document.createElement('div');
-                daysGrid.className = 'days-grid';
-
-                for (let i = 1; i <= season.days; i++) {
-                    const dayElement = document.createElement('div');
-                    dayElement.className = 'day';
-                    dayElement.id = `day-${season.id}-${i}`;
-                    dayElement.textContent = i;
-                    
-                    dayElement.addEventListener('click', () => openNote(season.id, season.name, i));
-                    daysGrid.appendChild(dayElement);
-                }
-
-                seasonCard.appendChild(daysGrid);
-                calendarContainer.appendChild(seasonCard);
-            });
+        // Cek Kabisat (Masehi)
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
         }
 
-        function getStorageKey(year, season, day) {
-            return `kalender_catatan_${year}_${season}_${day}`;
+        function getMasehiDays(year) {
+            return [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        }
+
+        // Kunci penyimpanan Universal berbasis Day Of Year (DOY)
+        function getStorageKey(year, doy) {
+            return `catatan_universal_${year}_${doy}`;
+        }
+
+        // --- 3. RENDERING UI KONTROL ---
+        function renderToggles() {
+            toggleGroup.innerHTML = `
+                <button class="toggle-btn ${activeMode === 'season' ? 'active' : ''}" onclick="switchMode('season')">
+                    ${currentNames.calSeasonName}
+                </button>
+                <button class="toggle-btn ${activeMode === 'masehi' ? 'active' : ''}" onclick="switchMode('masehi')">
+                    ${currentNames.calMasehiName}
+                </button>
+            `;
+            mainTitle.textContent = activeMode === 'season' ? currentNames.calSeasonName : currentNames.calMasehiName;
+        }
+
+        function switchMode(mode) {
+            activeMode = mode;
+            renderToggles();
+            buildCalendarUI();
+        }
+
+        // --- 4. MEMBANGUN GRID KALENDER ---
+        function buildCalendarUI() {
+            calendarContainer.innerHTML = '';
+            
+            if (activeMode === 'season') {
+                calendarContainer.classList.remove('masehi-mode');
+                // 4 Musim, masing-masing 90 hari
+                for (let s = 0; s < 4; s++) {
+                    const card = document.createElement('div');
+                    card.className = `calendar-card season-${s}`;
+                    card.innerHTML = `<div class="card-header"><h2>${currentNames.seasons[s]}</h2><span>90 Hari</span></div>`;
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'days-grid';
+
+                    for (let d = 1; d <= 90; d++) {
+                        // Perhitungan DOY: Musim 0 (hari 1-90), Musim 1 (91-180), dst.
+                        const universalDoy = (s * 90) + d;
+                        grid.appendChild(createDayElement(d, universalDoy, currentNames.seasons[s]));
+                    }
+                    card.appendChild(grid);
+                    calendarContainer.appendChild(card);
+                }
+            } else {
+                calendarContainer.classList.add('masehi-mode');
+                const mDays = getMasehiDays(currentYear);
+                let cumulativeDays = 0; // Untuk melacak DOY
+
+                for (let m = 0; m < 12; m++) {
+                    const card = document.createElement('div');
+                    card.className = 'calendar-card';
+                    card.innerHTML = `<div class="card-header"><h2>${currentNames.months[m]}</h2><span>${mDays[m]} Hari</span></div>`;
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'days-grid';
+
+                    for (let d = 1; d <= mDays[m]; d++) {
+                        cumulativeDays++; 
+                        const universalDoy = cumulativeDays;
+                        grid.appendChild(createDayElement(d, universalDoy, currentNames.months[m]));
+                    }
+                    card.appendChild(grid);
+                    calendarContainer.appendChild(card);
+                }
+            }
+            updateNotesIndicator();
+        }
+
+        function createDayElement(dayNumber, doy, blockName) {
+            const el = document.createElement('div');
+            el.className = 'day';
+            el.textContent = dayNumber;
+            el.dataset.doy = doy; // Simpan DOY di dataset HTML
+            el.addEventListener('click', () => openNote(doy, dayNumber, blockName));
+            return el;
         }
 
         function updateNotesIndicator() {
-            seasons.forEach(season => {
-                for (let i = 1; i <= season.days; i++) {
-                    const dayElement = document.getElementById(`day-${season.id}-${i}`);
-                    const key = getStorageKey(currentYear, season.id, i);
-                    
-                    if (localStorage.getItem(key)) {
-                        dayElement.classList.add('has-note');
-                    } else {
-                        dayElement.classList.remove('has-note');
-                    }
+            const allDays = document.querySelectorAll('.day');
+            allDays.forEach(day => {
+                const doy = day.dataset.doy;
+                const key = getStorageKey(currentYear, doy);
+                if (localStorage.getItem(key)) {
+                    day.classList.add('has-note');
+                } else {
+                    day.classList.remove('has-note');
                 }
             });
         }
 
-        function openNote(seasonId, seasonName, day) {
-            activeSeasonId = seasonId;
-            activeDay = day;
+        // --- 5. LOGIKA CATATAN (MODAL) ---
+        function openNote(doy, dayNumber, blockName) {
+            activeDoy = doy;
+            noteTitle.textContent = `Tahun ${currentYear} | ${blockName} | Hari ke-${dayNumber}`;
 
-            modalTitle.textContent = `Tahun ${currentYear} | ${seasonName} | Hari ${day}`;
-
-            const key = getStorageKey(currentYear, seasonId, day);
+            const key = getStorageKey(currentYear, doy);
             const savedNote = localStorage.getItem(key);
             
             if (savedNote) {
-                // Jika ada catatan, tampilkan Mode Baca
                 viewMode.style.display = 'block';
                 editMode.style.display = 'none';
                 noteDisplay.textContent = savedNote;
             } else {
-                // Jika kosong, tampilkan Mode Tulis
                 viewMode.style.display = 'none';
                 editMode.style.display = 'block';
                 noteContent.value = '';
             }
-            
-            // Tampilkan modal (animasi trigger)
-            modalOverlay.style.display = 'flex';
-            // Paksa reflow sebentar agar transisi opacity jalan
-            setTimeout(() => {
-                modalOverlay.classList.add('show');
-                if (!savedNote) noteContent.focus();
-            }, 10);
+            noteModal.style.display = 'flex';
         }
 
-        function closeNote() {
-            modalOverlay.classList.remove('show');
-            setTimeout(() => {
-                modalOverlay.style.display = 'none';
-            }, 200); // Tunggu animasi selesai baru di-hide
-        }
+        function closeNote() { noteModal.style.display = 'none'; }
 
         function saveNote() {
             const text = noteContent.value.trim();
-            const key = getStorageKey(currentYear, activeSeasonId, activeDay);
-
-            if (text !== '') {
-                localStorage.setItem(key, text);
-            }
-
+            const key = getStorageKey(currentYear, activeDoy);
+            if (text !== '') localStorage.setItem(key, text);
             updateNotesIndicator();
             closeNote();
         }
 
         function deleteNote() {
-            const key = getStorageKey(currentYear, activeSeasonId, activeDay);
-            localStorage.removeItem(key); // Hapus dari memori
-            updateNotesIndicator(); // Hilangkan ikon memo
-            
-            // Segera beralih ke Mode Tulis agar pengguna bisa langsung mengubah isi
+            localStorage.removeItem(getStorageKey(currentYear, activeDoy));
+            updateNotesIndicator();
             viewMode.style.display = 'none';
             editMode.style.display = 'block';
             noteContent.value = '';
             noteContent.focus();
         }
 
-        // --- Event Listeners ---
+        // --- 6. PENGATURAN (UBAH NAMA) ---
+        function openSettings() {
+            let html = `
+                <div class="settings-group">
+                    <label>Nama Kalender Opsi 1 (Musim)</label>
+                    <input type="text" id="in_calSeason" value="${currentNames.calSeasonName}">
+                </div>
+                <div class="settings-group">
+                    <label>Nama Kalender Opsi 2 (Masehi)</label>
+                    <input type="text" id="in_calMasehi" value="${currentNames.calMasehiName}">
+                </div>
+                <div class="settings-group">
+                    <label>Nama 4 Musim</label>
+                    <div class="grid-inputs">
+            `;
+            for (let i = 0; i < 4; i++) {
+                html += `<input type="text" id="in_s${i}" value="${currentNames.seasons[i]}">`;
+            }
+            html += `</div></div><div class="settings-group"><label>Nama 12 Bulan</label><div class="grid-inputs">`;
+            for (let i = 0; i < 12; i++) {
+                html += `<input type="text" id="in_m${i}" value="${currentNames.months[i]}">`;
+            }
+            html += `</div></div>`;
+            
+            settingsForm.innerHTML = html;
+            settingsModal.style.display = 'flex';
+        }
 
+        function saveSettings() {
+            currentNames.calSeasonName = document.getElementById('in_calSeason').value || "Kalender Musim";
+            currentNames.calMasehiName = document.getElementById('in_calMasehi').value || "Kalender Masehi";
+            
+            for (let i = 0; i < 4; i++) currentNames.seasons[i] = document.getElementById(`in_s${i}`).value || `Musim ${i+1}`;
+            for (let i = 0; i < 12; i++) currentNames.months[i] = document.getElementById(`in_m${i}`).value || `Bulan ${i+1}`;
+            
+            localStorage.setItem('kalender_names', JSON.stringify(currentNames));
+            settingsModal.style.display = 'none';
+            
+            renderToggles();
+            buildCalendarUI();
+        }
+
+        // --- 7. EVENT LISTENERS & INIT ---
         yearInput.addEventListener('change', (e) => {
             let val = parseInt(e.target.value);
             if (val < 1) val = 1;
             if (val > 2687) val = 2687;
-            
             yearInput.value = val;
             currentYear = val;
-            updateNotesIndicator(); 
+            buildCalendarUI(); 
         });
 
-        // Tombol tutup dari kedua mode
         document.getElementById('btnCloseView').addEventListener('click', closeNote);
         document.getElementById('btnCloseEdit').addEventListener('click', closeNote);
-        
-        document.getElementById('btnSave').addEventListener('click', saveNote);
+        document.getElementById('btnSaveNote').addEventListener('click', saveNote);
         document.getElementById('btnDelete').addEventListener('click', deleteNote);
+        
+        document.getElementById('btnOpenSettings').addEventListener('click', openSettings);
+        document.getElementById('btnCloseSettings').addEventListener('click', () => settingsModal.style.display = 'none');
+        document.getElementById('btnSaveSettings').addEventListener('click', saveSettings);
 
-        // Klik latar belakang hitam untuk menutup
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) {
-                closeNote();
-            }
-        });
-
+        // Inisialisasi awal
+        renderToggles();
         buildCalendarUI();
-        updateNotesIndicator();
     </script>
 </body>
 </html>
