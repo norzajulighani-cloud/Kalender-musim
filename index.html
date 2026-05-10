@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalender Musiman Interaktif</title>
+    <title>Kalender Musiman</title>
     <style>
         :root {
             --bg-color: #f8f9fa;
@@ -23,7 +23,6 @@
         header {
             text-align: center;
             margin-bottom: 2rem;
-            animation: fadeInDown 0.8s ease-out forwards;
         }
 
         h1 {
@@ -40,11 +39,10 @@
             background: white;
             padding: 1rem;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
             max-width: 400px;
             margin-left: auto;
             margin-right: auto;
-            animation: fadeIn 1s ease-out forwards;
         }
 
         .controls label {
@@ -59,18 +57,11 @@
             border-radius: 6px;
             width: 100px;
             text-align: center;
-            transition: all 0.3s;
         }
 
         .controls input[type="number"]:focus {
             outline: none;
             border-color: #4caf50;
-            box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
-        }
-
-        /* Efek saat tahun diganti */
-        .pulse-animation {
-            animation: pulse 0.4s ease-out;
         }
 
         .calendar-container {
@@ -90,22 +81,8 @@
         .season-card {
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            opacity: 0; /* Untuk animasi awal */
-            transform: translateY(30px);
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        /* Staggered animation (muncul bergiliran) */
-        .season-card.semi { animation-delay: 0.1s; }
-        .season-card.panas { animation-delay: 0.25s; }
-        .season-card.gugur { animation-delay: 0.4s; }
-        .season-card.dingin { animation-delay: 0.55s; }
-
-        .season-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.15);
+            background: white;
+            border: 1px solid #eaeaea;
         }
 
         .season-header {
@@ -114,7 +91,7 @@
             justify-content: space-between;
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
-            border-bottom: 2px solid rgba(0,0,0,0.1);
+            border-bottom: 2px solid rgba(0,0,0,0.05);
         }
 
         .season-header h2 {
@@ -125,10 +102,10 @@
             gap: 10px;
         }
 
-        .semi { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-top: 8px solid #4caf50; }
-        .panas { background: linear-gradient(135deg, #fff8e1, #ffecb3); border-top: 8px solid #ffb300; }
-        .gugur { background: linear-gradient(135deg, #fbe9e7, #ffccbc); border-top: 8px solid #ff5722; }
-        .dingin { background: linear-gradient(135deg, #e1f5fe, #b3e5fc); border-top: 8px solid #03a9f4; }
+        .semi { border-top: 6px solid #4caf50; }
+        .panas { border-top: 6px solid #ffb300; }
+        .gugur { border-top: 6px solid #ff5722; }
+        .dingin { border-top: 6px solid #03a9f4; }
 
         .days-grid {
             display: grid;
@@ -137,32 +114,32 @@
         }
 
         .day {
-            background-color: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(0,0,0,0.1);
+            background-color: #f1f3f5;
+            border: 1px solid transparent;
             border-radius: 6px;
             text-align: center;
             padding: 8px 2px;
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: background-color 0.15s ease, transform 0.15s ease;
             position: relative;
             user-select: none;
         }
 
         .day:hover {
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            transform: scale(1.15);
+            background-color: #e9ecef;
+            transform: scale(1.08);
+            border-color: #ccc;
             z-index: 2;
-            border-color: #999;
         }
 
-        .day:active {
-            transform: scale(0.95);
+        .day.has-note {
+            background-color: #e3f2fd; /* Warna khusus untuk hari bercatatan */
+            border-color: #bbdefb;
+            color: #0d47a1;
         }
 
-        /* Ikon catatan dengan animasi pop */
         .day.has-note::after {
             content: "📝";
             position: absolute;
@@ -171,25 +148,25 @@
             font-size: 0.75rem;
             background: white;
             border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            animation: popIcon 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            border: 1px solid #eee;
         }
 
-        /* --- STYLING & ANIMASI MODAL --- */
+        /* --- STYLING MODAL --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             display: none; 
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(3px); /* Efek blur estetik */
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
 
         .modal-overlay.show {
             display: flex;
-            animation: fadeInOverlay 0.3s ease-out forwards;
+            opacity: 1;
         }
 
         .modal {
@@ -198,34 +175,41 @@
             border-radius: 12px;
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            opacity: 0;
-            transform: scale(0.8) translateY(20px);
+            transform: translateY(-20px);
+            transition: transform 0.2s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
         .modal-overlay.show .modal {
-            animation: modalBounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+            transform: translateY(0);
         }
 
-        .modal h3 { margin-top: 0; color: var(--primary); }
+        .modal h3 { margin-top: 0; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
         
         textarea {
             width: 100%;
             height: 150px;
             padding: 12px;
-            border: 2px solid #eee;
+            border: 1px solid #ccc;
             border-radius: 8px;
             font-family: inherit;
             font-size: 1rem;
             resize: vertical;
             box-sizing: border-box;
             margin-bottom: 1rem;
-            transition: border-color 0.3s;
         }
 
-        textarea:focus {
-            outline: none;
-            border-color: #2c3e50;
+        /* Tampilan Mode Baca (View-Only) */
+        .note-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            min-height: 100px;
+            margin-bottom: 1rem;
+            white-space: pre-wrap; /* Mempertahankan format enter/newline */
+            line-height: 1.5;
+            color: #495057;
         }
 
         .modal-buttons {
@@ -241,58 +225,20 @@
             font-weight: bold;
             cursor: pointer;
             font-size: 1rem;
-            transition: all 0.2s;
+            transition: opacity 0.15s ease;
         }
 
         .btn-save { background-color: #4caf50; color: white; }
         .btn-delete { background-color: #f44336; color: white; }
         .btn-close { background-color: #e0e0e0; color: #333; }
         
-        button:hover { 
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        button:active {
-            transform: translateY(0);
-        }
-
-        /* --- KUMPULAN KEYFRAMES (ANIMASI) --- */
-        @keyframes fadeInUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes popIcon {
-            0% { transform: scale(0) rotate(-20deg); }
-            80% { transform: scale(1.2) rotate(10deg); }
-            100% { transform: scale(1) rotate(0deg); }
-        }
-        @keyframes fadeInOverlay {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes modalBounceIn {
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); background-color: #e8f5e9; }
-            100% { transform: scale(1); }
-        }
-
+        button:hover { opacity: 0.85; }
     </style>
 </head>
 <body>
 
     <header>
         <h1>Kalender Musiman</h1>
-        <p class="subtitle">Sistem penanggalan dengan fitur catatan (90 hari per musim)</p>
     </header>
 
     <div class="controls">
@@ -305,13 +251,26 @@
     <!-- Modal Catatan -->
     <div class="modal-overlay" id="noteModal">
         <div class="modal">
-            <h3 id="modalTitle">Catatan</h3>
-            <textarea id="noteContent" placeholder="Tulis kejadian atau catatan di hari ini..."></textarea>
-            <div class="modal-buttons">
-                <button class="btn-delete" id="btnDelete">Hapus</button>
-                <button class="btn-close" id="btnClose">Batal</button>
-                <button class="btn-save" id="btnSave">Simpan</button>
+            <h3 id="modalTitle">Detail Kejadian</h3>
+            
+            <!-- Mode Baca (View) -->
+            <div id="viewMode" style="display: none;">
+                <div id="noteDisplay" class="note-display"></div>
+                <div class="modal-buttons">
+                    <button class="btn-delete" id="btnDelete">Hapus Catatan</button>
+                    <button class="btn-close" id="btnCloseView">Tutup</button>
+                </div>
             </div>
+
+            <!-- Mode Tulis (Edit) -->
+            <div id="editMode" style="display: none;">
+                <textarea id="noteContent" placeholder="Tulis kejadian atau catatan di hari ini..."></textarea>
+                <div class="modal-buttons">
+                    <button class="btn-close" id="btnCloseEdit">Batal</button>
+                    <button class="btn-save" id="btnSave">Simpan</button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -328,11 +287,13 @@
         const modalOverlay = document.getElementById('noteModal');
         const modalTitle = document.getElementById('modalTitle');
         const noteContent = document.getElementById('noteContent');
+        const noteDisplay = document.getElementById('noteDisplay');
+        const viewMode = document.getElementById('viewMode');
+        const editMode = document.getElementById('editMode');
         
         let currentYear = 1;
         let activeSeasonId = '';
         let activeDay = 0;
-        let activeSeasonName = '';
 
         function buildCalendarUI() {
             calendarContainer.innerHTML = ''; 
@@ -345,7 +306,6 @@
                 header.className = 'season-header';
                 header.innerHTML = `
                     <h2><span>${season.icon}</span> ${season.name}</h2>
-                    <span style="font-weight: bold; color: #555;">${season.days} Hari</span>
                 `;
                 seasonCard.appendChild(header);
 
@@ -388,25 +348,39 @@
 
         function openNote(seasonId, seasonName, day) {
             activeSeasonId = seasonId;
-            activeSeasonName = seasonName;
             activeDay = day;
 
-            modalTitle.textContent = `Tahun ${currentYear} | ${seasonName} | Hari ke-${day}`;
+            modalTitle.textContent = `Tahun ${currentYear} | ${seasonName} | Hari ${day}`;
 
             const key = getStorageKey(currentYear, seasonId, day);
             const savedNote = localStorage.getItem(key);
             
-            noteContent.value = savedNote ? savedNote : '';
+            if (savedNote) {
+                // Jika ada catatan, tampilkan Mode Baca
+                viewMode.style.display = 'block';
+                editMode.style.display = 'none';
+                noteDisplay.textContent = savedNote;
+            } else {
+                // Jika kosong, tampilkan Mode Tulis
+                viewMode.style.display = 'none';
+                editMode.style.display = 'block';
+                noteContent.value = '';
+            }
             
-            // Tambahkan class 'show' untuk men-trigger animasi masuk
-            modalOverlay.classList.add('show');
-            
-            // Fokus otomatis ke textarea
-            setTimeout(() => noteContent.focus(), 100);
+            // Tampilkan modal (animasi trigger)
+            modalOverlay.style.display = 'flex';
+            // Paksa reflow sebentar agar transisi opacity jalan
+            setTimeout(() => {
+                modalOverlay.classList.add('show');
+                if (!savedNote) noteContent.focus();
+            }, 10);
         }
 
         function closeNote() {
             modalOverlay.classList.remove('show');
+            setTimeout(() => {
+                modalOverlay.style.display = 'none';
+            }, 200); // Tunggu animasi selesai baru di-hide
         }
 
         function saveNote() {
@@ -415,8 +389,6 @@
 
             if (text !== '') {
                 localStorage.setItem(key, text);
-            } else {
-                localStorage.removeItem(key); 
             }
 
             updateNotesIndicator();
@@ -425,34 +397,36 @@
 
         function deleteNote() {
             const key = getStorageKey(currentYear, activeSeasonId, activeDay);
-            localStorage.removeItem(key);
-            updateNotesIndicator();
-            closeNote();
+            localStorage.removeItem(key); // Hapus dari memori
+            updateNotesIndicator(); // Hilangkan ikon memo
+            
+            // Segera beralih ke Mode Tulis agar pengguna bisa langsung mengubah isi
+            viewMode.style.display = 'none';
+            editMode.style.display = 'block';
+            noteContent.value = '';
+            noteContent.focus();
         }
 
         // --- Event Listeners ---
 
         yearInput.addEventListener('change', (e) => {
             let val = parseInt(e.target.value);
-            
             if (val < 1) val = 1;
             if (val > 2687) val = 2687;
             
             yearInput.value = val;
             currentYear = val;
-            
-            // Animasi pulse saat ganti tahun
-            yearInput.classList.remove('pulse-animation');
-            void yearInput.offsetWidth; // Trigger reflow
-            yearInput.classList.add('pulse-animation');
-
             updateNotesIndicator(); 
         });
 
-        document.getElementById('btnClose').addEventListener('click', closeNote);
+        // Tombol tutup dari kedua mode
+        document.getElementById('btnCloseView').addEventListener('click', closeNote);
+        document.getElementById('btnCloseEdit').addEventListener('click', closeNote);
+        
         document.getElementById('btnSave').addEventListener('click', saveNote);
         document.getElementById('btnDelete').addEventListener('click', deleteNote);
 
+        // Klik latar belakang hitam untuk menutup
         modalOverlay.addEventListener('click', (e) => {
             if (e.target === modalOverlay) {
                 closeNote();
