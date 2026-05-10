@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalender Musiman</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .calendar-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Layout untuk layar yang lebih besar */
+        @media (min-width: 768px) {
+            .calendar-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .season-card {
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .season-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .season-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .season-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Tema Warna per Musim */
+        .semi {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border-top: 8px solid #4caf50;
+        }
+        
+        .panas {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            border-top: 8px solid #ffb300;
+        }
+        
+        .gugur {
+            background: linear-gradient(135deg, #fbe9e7, #ffccbc);
+            border-top: 8px solid #ff5722;
+        }
+        
+        .dingin {
+            background: linear-gradient(135deg, #e1f5fe, #b3e5fc);
+            border-top: 8px solid #03a9f4;
+        }
+
+        .days-grid {
+            display: grid;
+            /* Membuat kotak-kotak hari secara otomatis menyesuaikan lebar */
+            grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+            gap: 6px;
+        }
+
+        .day {
+            background-color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 6px;
+            text-align: center;
+            padding: 8px 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #495057;
+            cursor: default;
+            transition: background-color 0.2s;
+        }
+
+        .day:hover {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Kalender Musiman </h1>
+        <p class="subtitle">Sistem penanggalan berbasis 4 siklus alam (90 hari per musim)</p>
+    </header>
+
+    <div class="calendar-container" id="calendar">
+        <!-- Kalender akan di-generate oleh JavaScript di sini -->
+    </div>
+
+    <script>
+        // Konfigurasi Musim
+        const seasons = [
+            { id: 'semi', name: 'Musim Semi', icon: '🌸', days: 90 },
+            { id: 'panas', name: 'Musim Panas', icon: '☀️', days: 90 },
+            { id: 'gugur', name: 'Musim Gugur', icon: '🍂', days: 90 },
+            { id: 'dingin', name: 'Musim Dingin', icon: '❄️', days: 90 }
+        ];
+
+        const calendarContainer = document.getElementById('calendar');
+
+        // Fungsi untuk membuat elemen HTML setiap musim
+        function generateCalendar() {
+            seasons.forEach(season => {
+                // Membuat kartu musim
+                const seasonCard = document.createElement('div');
+                seasonCard.className = `season-card ${season.id}`;
+
+                // Membuat header musim
+                const header = document.createElement('div');
+                header.className = 'season-header';
+                header.innerHTML = `
+                    <h2><span>${season.icon}</span> ${season.name}</h2>
+                    <span style="font-weight: bold; color: #555;">${season.days} Hari</span>
+                `;
+                seasonCard.appendChild(header);
+
+                // Membuat grid hari
+                const daysGrid = document.createElement('div');
+                daysGrid.className = 'days-grid';
+
+                // Looping untuk membuat kotak angka berdasarkan jumlah hari (90 hari)
+                for (let i = 1; i <= season.days; i++) {
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'day';
+                    dayElement.textContent = i;
+                    daysGrid.appendChild(dayElement);
+                }
+
+                seasonCard.appendChild(daysGrid);
+                calendarContainer.appendChild(seasonCard);
+            });
+        }
+
+        // Eksekusi fungsi saat halaman dimuat
+        generateCalendar();
+    </script>
+
+</body>
+</html>
