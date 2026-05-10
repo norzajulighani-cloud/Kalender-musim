@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Kalender Ganda</title>
+    <title>Sistem Kalender Ganda Terpadu</title>
     <style>
         :root {
             --bg-color: #f8f9fa;
@@ -21,10 +21,10 @@
             line-height: 1.6;
         }
 
-        header { text-align: center; margin-bottom: 2rem; }
-        h1 { color: var(--primary); margin-bottom: 0.5rem; }
+        header { text-align: center; margin-bottom: 2rem; animation: fadeInDown 0.5s ease-out; }
+        h1 { color: var(--primary); margin-bottom: 0.5rem; transition: color 0.3s; }
 
-        /* --- Panel Kontrol Atas --- */
+        /* --- Panel Kontrol --- */
         .controls-wrapper {
             background: white;
             padding: 1.5rem;
@@ -36,6 +36,7 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            animation: fadeIn 0.6s ease-out;
         }
 
         .toggle-group {
@@ -44,6 +45,7 @@
             background: #f1f3f5;
             border-radius: 8px;
             padding: 5px;
+            position: relative;
         }
 
         .toggle-btn {
@@ -55,13 +57,14 @@
             cursor: pointer;
             border-radius: 6px;
             color: #6c757d;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
         }
 
         .toggle-btn.active {
             background: white;
             color: var(--primary);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transform: scale(1.02);
         }
 
         .action-group {
@@ -84,6 +87,13 @@
             border-radius: 6px;
             width: 100px;
             text-align: center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .year-control input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
         }
 
         .btn-settings {
@@ -96,10 +106,11 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            transition: background 0.2s;
+            transition: all 0.2s ease;
         }
         
-        .btn-settings:hover { background: #dee2e6; }
+        .btn-settings:hover { background: #dee2e6; transform: translateY(-2px); }
+        .btn-settings:active { transform: translateY(0); }
 
         /* --- Grid Kalender --- */
         .calendar-container {
@@ -115,7 +126,6 @@
         }
 
         @media (min-width: 1024px) {
-            /* Mode Masehi butuh lebih banyak kolom agar rapi */
             .calendar-container.masehi-mode { grid-template-columns: repeat(3, 1fr); }
         }
 
@@ -125,13 +135,20 @@
             background: white;
             border: 1px solid #eaeaea;
             border-top: 6px solid var(--primary);
+            animation: zoomIn 0.4s ease-out forwards;
+            opacity: 0; /* Starter untuk animasi */
         }
 
-        /* Warna khusus untuk mode musim */
-        .season-0 { border-top-color: #4caf50; } /* Semi */
-        .season-1 { border-top-color: #ffb300; } /* Panas */
-        .season-2 { border-top-color: #ff5722; } /* Gugur */
-        .season-3 { border-top-color: #03a9f4; } /* Dingin */
+        /* Staggered animation delay */
+        .calendar-card:nth-child(1) { animation-delay: 0.05s; }
+        .calendar-card:nth-child(2) { animation-delay: 0.1s; }
+        .calendar-card:nth-child(3) { animation-delay: 0.15s; }
+        .calendar-card:nth-child(4) { animation-delay: 0.2s; }
+
+        .season-0 { border-top-color: #4caf50; } 
+        .season-1 { border-top-color: #ffb300; } 
+        .season-2 { border-top-color: #ff5722; } 
+        .season-3 { border-top-color: #03a9f4; } 
 
         .card-header {
             display: flex;
@@ -158,15 +175,17 @@
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
+            border: 1px solid transparent;
         }
 
         .day:hover {
             background-color: #e9ecef;
-            transform: scale(1.1);
+            transform: scale(1.15);
             z-index: 2;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #ccc;
         }
 
         .day.has-note {
@@ -178,23 +197,29 @@
         .day.has-note::after {
             content: "📝";
             position: absolute;
-            top: -5px; right: -5px;
-            font-size: 0.7rem;
+            top: -6px; right: -6px;
+            font-size: 0.75rem;
             background: white;
             border-radius: 50%;
             border: 1px solid #eee;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            animation: popIcon 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* --- Modals --- */
+        /* --- Modals (Pop-up) --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
             display: none; 
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.25s ease;
         }
+
+        .modal-overlay.show { opacity: 1; }
 
         .modal {
             background: white;
@@ -202,32 +227,41 @@
             border-radius: 12px;
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
             max-height: 90vh;
             overflow-y: auto;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2);
         }
 
-        .modal h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .modal-overlay.show .modal { transform: scale(1) translateY(0); }
+
+        .modal h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; color: var(--primary); }
         
         textarea {
             width: 100%; height: 150px;
             padding: 12px; border: 1px solid #ccc;
             border-radius: 8px; font-family: inherit;
             margin-bottom: 1rem; resize: vertical; box-sizing: border-box;
+            transition: border-color 0.2s;
         }
+        textarea:focus { outline: none; border-color: var(--accent); }
 
         .note-display {
             background: #f8f9fa; padding: 15px; border-radius: 8px;
             border: 1px solid #e9ecef; min-height: 100px;
-            margin-bottom: 1rem; white-space: pre-wrap;
+            margin-bottom: 1rem; white-space: pre-wrap; line-height: 1.5;
         }
 
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; }
         
         button {
             padding: 8px 16px; border: none; border-radius: 6px;
-            font-weight: bold; cursor: pointer;
+            font-weight: bold; cursor: pointer; transition: all 0.2s;
         }
+        button:hover { transform: translateY(-2px); opacity: 0.9; }
+        button:active { transform: translateY(0); }
+        
         .btn-save { background-color: var(--accent); color: white; }
         .btn-delete { background-color: #f44336; color: white; }
         .btn-close { background-color: #e0e0e0; color: #333; }
@@ -238,8 +272,18 @@
         .settings-group input { 
             width: 100%; padding: 8px; border: 1px solid #ccc; 
             border-radius: 4px; box-sizing: border-box; margin-bottom: 8px;
+            transition: border-color 0.2s;
         }
+        .settings-group input:focus { outline: none; border-color: var(--primary); }
         .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* --- Keyframes Animasi --- */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes popIcon { 0% { transform: scale(0); } 80% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .pulse { animation: pulse 0.3s ease-out; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
     </style>
 </head>
@@ -250,9 +294,7 @@
     </header>
 
     <div class="controls-wrapper">
-        <div class="toggle-group" id="calendarToggle">
-            <!-- Tombol Toggle akan diisi via JS -->
-        </div>
+        <div class="toggle-group" id="calendarToggle"></div>
 
         <div class="action-group">
             <div class="year-control">
@@ -279,7 +321,7 @@
             </div>
 
             <div id="editMode" style="display: none;">
-                <textarea id="noteContent" placeholder="Tulis kejadian..."></textarea>
+                <textarea id="noteContent" placeholder="Tulis kejadian pada hari ini..."></textarea>
                 <div class="modal-buttons">
                     <button class="btn-close" id="btnCloseEdit">Batal</button>
                     <button class="btn-save" id="btnSaveNote">Simpan</button>
@@ -295,13 +337,13 @@
             <div id="settingsForm"></div>
             <div class="modal-buttons" style="margin-top: 15px;">
                 <button class="btn-close" id="btnCloseSettings">Batal</button>
-                <button class="btn-save" id="btnSaveSettings">Simpan Perubahan</button>
+                <button class="btn-save" id="btnSaveSettings">Simpan</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. STATE & KONFIGURASI DEFAULT ---
+        // --- STATE & DEFAULT ---
         const defaultNames = {
             calSeasonName: "Kalender Musim",
             calMasehiName: "Kalender Masehi",
@@ -311,8 +353,8 @@
 
         let currentNames = JSON.parse(localStorage.getItem('kalender_names')) || defaultNames;
         let currentYear = 1;
-        let activeMode = 'season'; // 'season' atau 'masehi'
-        let activeDoy = 0; // Universal Day of Year (1-366)
+        let activeMode = 'season'; 
+        let activeDoy = 0; 
 
         // --- ELEMEN DOM ---
         const calendarContainer = document.getElementById('calendar');
@@ -320,7 +362,6 @@
         const toggleGroup = document.getElementById('calendarToggle');
         const yearInput = document.getElementById('yearInput');
         
-        // Modal Catatan
         const noteModal = document.getElementById('noteModal');
         const noteTitle = document.getElementById('modalTitle');
         const noteContent = document.getElementById('noteContent');
@@ -328,13 +369,10 @@
         const viewMode = document.getElementById('viewMode');
         const editMode = document.getElementById('editMode');
 
-        // Modal Pengaturan
         const settingsModal = document.getElementById('settingsModal');
         const settingsForm = document.getElementById('settingsForm');
 
-        // --- 2. LOGIKA PENANGGALAN (SINKRONISASI) ---
-        
-        // Cek Kabisat (Masehi)
+        // --- LOGIKA PENANGGALAN ---
         function isLeapYear(year) {
             return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
         }
@@ -343,12 +381,19 @@
             return [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
         }
 
-        // Kunci penyimpanan Universal berbasis Day Of Year (DOY)
+        // Distribusi 365/366 hari ke 4 musim
+        function getSeasonDays(year) {
+            const isLeap = isLeapYear(year);
+            // Tahun biasa (365): 91, 91, 91, 92
+            // Tahun kabisat (366): 91, 91, 92, 92
+            return isLeap ? [91, 91, 92, 92] : [91, 91, 91, 92];
+        }
+
         function getStorageKey(year, doy) {
             return `catatan_universal_${year}_${doy}`;
         }
 
-        // --- 3. RENDERING UI KONTROL ---
+        // --- RENDERING UI ---
         function renderToggles() {
             toggleGroup.innerHTML = `
                 <button class="toggle-btn ${activeMode === 'season' ? 'active' : ''}" onclick="switchMode('season')">
@@ -359,33 +404,39 @@
                 </button>
             `;
             mainTitle.textContent = activeMode === 'season' ? currentNames.calSeasonName : currentNames.calMasehiName;
+            
+            // Animasi pulse saat ganti judul
+            mainTitle.classList.remove('pulse');
+            void mainTitle.offsetWidth; 
+            mainTitle.classList.add('pulse');
         }
 
         function switchMode(mode) {
+            if (activeMode === mode) return; // Mencegah render ulang jika mode sama
             activeMode = mode;
             renderToggles();
             buildCalendarUI();
         }
 
-        // --- 4. MEMBANGUN GRID KALENDER ---
         function buildCalendarUI() {
             calendarContainer.innerHTML = '';
             
             if (activeMode === 'season') {
                 calendarContainer.classList.remove('masehi-mode');
-                // 4 Musim, masing-masing 90 hari
+                const sDays = getSeasonDays(currentYear);
+                let cumulativeDays = 0;
+
                 for (let s = 0; s < 4; s++) {
                     const card = document.createElement('div');
                     card.className = `calendar-card season-${s}`;
-                    card.innerHTML = `<div class="card-header"><h2>${currentNames.seasons[s]}</h2><span>90 Hari</span></div>`;
+                    card.innerHTML = `<div class="card-header"><h2>${currentNames.seasons[s]}</h2><span>${sDays[s]} Hari</span></div>`;
                     
                     const grid = document.createElement('div');
                     grid.className = 'days-grid';
 
-                    for (let d = 1; d <= 90; d++) {
-                        // Perhitungan DOY: Musim 0 (hari 1-90), Musim 1 (91-180), dst.
-                        const universalDoy = (s * 90) + d;
-                        grid.appendChild(createDayElement(d, universalDoy, currentNames.seasons[s]));
+                    for (let d = 1; d <= sDays[s]; d++) {
+                        cumulativeDays++;
+                        grid.appendChild(createDayElement(d, cumulativeDays, currentNames.seasons[s]));
                     }
                     card.appendChild(grid);
                     calendarContainer.appendChild(card);
@@ -393,7 +444,7 @@
             } else {
                 calendarContainer.classList.add('masehi-mode');
                 const mDays = getMasehiDays(currentYear);
-                let cumulativeDays = 0; // Untuk melacak DOY
+                let cumulativeDays = 0;
 
                 for (let m = 0; m < 12; m++) {
                     const card = document.createElement('div');
@@ -405,8 +456,7 @@
 
                     for (let d = 1; d <= mDays[m]; d++) {
                         cumulativeDays++; 
-                        const universalDoy = cumulativeDays;
-                        grid.appendChild(createDayElement(d, universalDoy, currentNames.months[m]));
+                        grid.appendChild(createDayElement(d, cumulativeDays, currentNames.months[m]));
                     }
                     card.appendChild(grid);
                     calendarContainer.appendChild(card);
@@ -419,7 +469,7 @@
             const el = document.createElement('div');
             el.className = 'day';
             el.textContent = dayNumber;
-            el.dataset.doy = doy; // Simpan DOY di dataset HTML
+            el.dataset.doy = doy; 
             el.addEventListener('click', () => openNote(doy, dayNumber, blockName));
             return el;
         }
@@ -437,13 +487,12 @@
             });
         }
 
-        // --- 5. LOGIKA CATATAN (MODAL) ---
+        // --- LOGIKA MODAL CATATAN ---
         function openNote(doy, dayNumber, blockName) {
             activeDoy = doy;
             noteTitle.textContent = `Tahun ${currentYear} | ${blockName} | Hari ke-${dayNumber}`;
 
-            const key = getStorageKey(currentYear, doy);
-            const savedNote = localStorage.getItem(key);
+            const savedNote = localStorage.getItem(getStorageKey(currentYear, doy));
             
             if (savedNote) {
                 viewMode.style.display = 'block';
@@ -454,29 +503,40 @@
                 editMode.style.display = 'block';
                 noteContent.value = '';
             }
+            
             noteModal.style.display = 'flex';
+            setTimeout(() => {
+                noteModal.classList.add('show');
+                if (!savedNote) noteContent.focus();
+            }, 10);
         }
 
-        function closeNote() { noteModal.style.display = 'none'; }
+        function closeModal(modalElement) {
+            modalElement.classList.remove('show');
+            setTimeout(() => { modalElement.style.display = 'none'; }, 250);
+        }
 
         function saveNote() {
             const text = noteContent.value.trim();
-            const key = getStorageKey(currentYear, activeDoy);
-            if (text !== '') localStorage.setItem(key, text);
+            if (text !== '') {
+                localStorage.setItem(getStorageKey(currentYear, activeDoy), text);
+            }
             updateNotesIndicator();
-            closeNote();
+            closeModal(noteModal);
         }
 
         function deleteNote() {
             localStorage.removeItem(getStorageKey(currentYear, activeDoy));
             updateNotesIndicator();
+            
+            // Animasi ringan saat beralih ke edit mode
             viewMode.style.display = 'none';
             editMode.style.display = 'block';
             noteContent.value = '';
             noteContent.focus();
         }
 
-        // --- 6. PENGATURAN (UBAH NAMA) ---
+        // --- PENGATURAN ---
         function openSettings() {
             let html = `
                 <div class="settings-group">
@@ -502,6 +562,7 @@
             
             settingsForm.innerHTML = html;
             settingsModal.style.display = 'flex';
+            setTimeout(() => settingsModal.classList.add('show'), 10);
         }
 
         function saveSettings() {
@@ -512,30 +573,41 @@
             for (let i = 0; i < 12; i++) currentNames.months[i] = document.getElementById(`in_m${i}`).value || `Bulan ${i+1}`;
             
             localStorage.setItem('kalender_names', JSON.stringify(currentNames));
-            settingsModal.style.display = 'none';
+            closeModal(settingsModal);
             
             renderToggles();
             buildCalendarUI();
         }
 
-        // --- 7. EVENT LISTENERS & INIT ---
+        // --- EVENT LISTENERS ---
         yearInput.addEventListener('change', (e) => {
             let val = parseInt(e.target.value);
             if (val < 1) val = 1;
             if (val > 2687) val = 2687;
             yearInput.value = val;
             currentYear = val;
+            
+            yearInput.classList.remove('pulse');
+            void yearInput.offsetWidth;
+            yearInput.classList.add('pulse');
+            
             buildCalendarUI(); 
         });
 
-        document.getElementById('btnCloseView').addEventListener('click', closeNote);
-        document.getElementById('btnCloseEdit').addEventListener('click', closeNote);
+        document.getElementById('btnCloseView').addEventListener('click', () => closeModal(noteModal));
+        document.getElementById('btnCloseEdit').addEventListener('click', () => closeModal(noteModal));
         document.getElementById('btnSaveNote').addEventListener('click', saveNote);
         document.getElementById('btnDelete').addEventListener('click', deleteNote);
         
         document.getElementById('btnOpenSettings').addEventListener('click', openSettings);
-        document.getElementById('btnCloseSettings').addEventListener('click', () => settingsModal.style.display = 'none');
+        document.getElementById('btnCloseSettings').addEventListener('click', () => closeModal(settingsModal));
         document.getElementById('btnSaveSettings').addEventListener('click', saveSettings);
+
+        // Tutup modal jika klik di luar box
+        window.addEventListener('click', (e) => {
+            if (e.target === noteModal) closeModal(noteModal);
+            if (e.target === settingsModal) closeModal(settingsModal);
+        });
 
         // Inisialisasi awal
         renderToggles();
